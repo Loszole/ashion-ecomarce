@@ -1,0 +1,15 @@
+// Export all Shop components for easier imports
+export { default as Blog } from "./Blog";
+export { default as Blog_Details } from "./Blog_Details";
+export { default as Cart } from "./Cart";
+export { default as Contact } from "./Contact";
+export { default as Footer } from "./Footer";
+export { default as Header } from "./Header";
+export { default as Home } from "./Home";
+export { default as Kids } from "./Kids";
+export { default as Login } from "./Login";
+export { default as Mens } from "./Mens";
+export { default as Prodect_Details } from "./Prodect_Details";
+export { default as Register } from "./Register";
+export { default as Wishlist } from "./Wishlist";
+export { default as Womens } from "./Womens";
