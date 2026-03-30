@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import logo from "../../assects/img/logo.png";
 import payment1 from "../../assects/img/payment/payment-1.png";
 import payment2 from "../../assects/img/payment/payment-2.png";
@@ -33,10 +34,10 @@ const Footer = () => {
                         <div className="footer__widget">
                             <h6>Quick links</h6>
                             <ul>
-                                <li>About</li>
-                                <li>Blogs</li>
-                                <li>Contact</li>
-                                <li>FAQ</li>
+                                <li><Link to="/">About</Link></li>
+                                <li><Link to="/blog">Blogs</Link></li>
+                                <li><Link to="/contact">Contact</Link></li>
+                                <li><Link to="/contact">FAQ</Link></li>
                             </ul>
                         </div>
                     </div>
@@ -44,10 +45,10 @@ const Footer = () => {
                         <div className="footer__widget">
                             <h6>Account</h6>
                             <ul>
-                                <li>My Account</li>
-                                <li>Orders Tracking</li>
-                                <li>Checkout</li>
-                                <li>Wishlist</li>
+                                <li><Link to="/login">My Account</Link></li>
+                                <li><Link to="/orders-tracking">Orders Tracking</Link></li>
+                                <li><Link to="/checkout">Checkout</Link></li>
+                                <li><Link to="/wishlist">Wishlist</Link></li>
                             </ul>
                         </div>
                     </div>

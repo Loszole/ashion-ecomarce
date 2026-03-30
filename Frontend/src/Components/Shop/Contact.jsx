@@ -1,6 +1,48 @@
-import React from "react";
+import React, { useState } from "react";
 
 const Contact = () => {
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        subject: "",
+        message: ""
+    });
+    const [submitting, setSubmitting] = useState(false);
+    const [success, setSuccess] = useState("");
+    const [error, setError] = useState("");
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        setSuccess("");
+        setError("");
+
+        try {
+            const res = await fetch("/api/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form)
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data.message || "Failed to send message.");
+            }
+
+            setSuccess("Your message has been sent successfully.");
+            setForm({ name: "", email: "", subject: "", message: "" });
+        } catch (err) {
+            setError(err.message || "Failed to send message.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
 	return (
            <main>
                {/* Contact Section Begin */}
@@ -28,12 +70,14 @@ const Contact = () => {
                                    </div>
                                    <div className="contact__form">
                                        <h5>SEND MESSAGE</h5>
-                                       <form action="#">
-                                           <input type="text" placeholder="Name" />
-                                           <input type="text" placeholder="Email" />
-                                           <input type="text" placeholder="Website" />
-                                           <textarea placeholder="Message"></textarea>
-                                           <button type="submit" className="site-btn">Send Message</button>
+                                       <form onSubmit={handleSubmit}>
+										   {success && <div className="alert alert-success">{success}</div>}
+										   {error && <div className="alert alert-danger">{error}</div>}
+										   <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Name" required />
+										   <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email" required />
+										   <input type="text" name="subject" value={form.subject} onChange={handleChange} placeholder="Subject" />
+										   <textarea name="message" value={form.message} onChange={handleChange} placeholder="Message" required></textarea>
+										   <button type="submit" className="site-btn" disabled={submitting}>{submitting ? "Sending..." : "Send Message"}</button>
                                        </form>
                                    </div>
                                </div>
