@@ -1,0 +1,512 @@
+@import url("https://fonts.googleapis.com/css2?family=Muli:wght@300;400;600;700&display=swap");
+@import url("./themify-local.css");
+
+.paper-admin {
+  --paper-bg: #f4f0ea;
+  --paper-surface: #ffffff;
+  --paper-surface-soft: #f8f5f0;
+  --paper-border: #e7ddd0;
+  --paper-text: #5f5b55;
+  --paper-heading: #403d39;
+  --paper-muted: #9a8f82;
+  --paper-accent: #eb5e28;
+  --paper-accent-soft: #fef2ec;
+  --paper-shadow: 0 18px 40px rgba(111, 86, 63, 0.08);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(235, 94, 40, 0.08), transparent 28%),
+    linear-gradient(180deg, #f7f3ed 0%, #f3ede4 100%);
+  color: var(--paper-text);
+  font-family: "Muli", Arial, sans-serif;
+}
+
+.paper-admin * {
+  box-sizing: border-box;
+}
+
+.paper-admin h1,
+.paper-admin h2,
+.paper-admin h3,
+.paper-admin h4,
+.paper-admin h5,
+.paper-admin h6,
+.paper-admin p,
+.paper-admin a,
+.paper-admin span,
+.paper-admin td,
+.paper-admin th,
+.paper-admin label,
+.paper-admin button,
+.paper-admin input,
+.paper-admin select,
+.paper-admin textarea {
+  font-family: "Muli", Arial, sans-serif;
+}
+
+.paper-admin-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.paper-admin-sidebar {
+  width: 280px;
+  flex: 0 0 280px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 24px 18px;
+  background: rgba(255, 255, 255, 0.94);
+  border-right: 1px solid rgba(64, 61, 57, 0.08);
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+
+.paper-admin-sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f3 100%);
+  border: 1px solid var(--paper-border);
+  box-shadow: var(--paper-shadow);
+  overflow: hidden;
+}
+
+.paper-admin-brand-block,
+.paper-admin-user-card,
+.paper-admin-sidebar-footer {
+  padding: 22px 24px;
+}
+
+.paper-admin-brand-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--paper-border);
+}
+
+.paper-admin-brand-mark,
+.paper-admin-user-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eb5e28 0%, #f3bb45 100%);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  box-shadow: 0 12px 24px rgba(235, 94, 40, 0.22);
+}
+
+.paper-admin-brand-block h2,
+.paper-admin-topbar h1,
+.paper-admin-hero-card h2 {
+  margin: 0;
+  color: var(--paper-heading);
+}
+
+.paper-admin-eyebrow {
+  margin: 0 0 4px;
+  color: var(--paper-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.paper-admin-user-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--paper-border);
+}
+
+.paper-admin-user-card strong,
+.paper-admin-hero-metrics strong {
+  display: block;
+  color: var(--paper-heading);
+}
+
+.paper-admin-user-card span,
+.paper-admin-hero-metrics span {
+  color: var(--paper-muted);
+  font-size: 0.88rem;
+}
+
+.paper-admin-nav {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.paper-admin-nav-link,
+.paper-admin-store-link,
+.paper-admin-ghost-link {
+  text-decoration: none;
+}
+
+.paper-admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  color: var(--paper-text);
+  transition: transform 150ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.paper-admin-nav-link i {
+  width: 18px;
+  font-size: 1rem;
+}
+
+.paper-admin-nav-link:hover,
+.paper-admin-nav-link.active {
+  background: var(--paper-accent-soft);
+  color: var(--paper-accent);
+  transform: translateX(4px);
+  box-shadow: inset 0 0 0 1px rgba(235, 94, 40, 0.12);
+}
+
+.paper-admin-sidebar-footer {
+  border-top: 1px solid var(--paper-border);
+}
+
+.paper-admin-store-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--paper-heading);
+  font-weight: 600;
+}
+
+.paper-admin-main-panel {
+  flex: 1;
+  min-width: 0;
+  padding: 28px;
+}
+
+.paper-admin-topbar,
+.paper-admin-hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.paper-admin-topbar {
+  margin-bottom: 22px;
+}
+
+.paper-admin-topbar-left,
+.paper-admin-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.paper-admin-date-chip,
+.paper-admin-ghost-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--paper-border);
+  color: var(--paper-heading);
+  font-size: 0.92rem;
+}
+
+.paper-admin-menu-toggle {
+  display: none;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--paper-shadow);
+}
+
+.paper-admin-menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  margin: 4px auto;
+  background: var(--paper-heading);
+  border-radius: 999px;
+}
+
+.paper-admin-hero-card,
+.paper-admin .card {
+  border: 1px solid rgba(247, 241, 231, 0.95);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(252, 249, 244, 0.98) 100%);
+  box-shadow: var(--paper-shadow);
+}
+
+.paper-admin-hero-card {
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.paper-admin .card {
+  margin-bottom: 24px;
+}
+
+.paper-admin .card .header,
+.paper-admin .card .content,
+.paper-admin .card .footer {
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
+.paper-admin .card .header {
+  padding-top: 20px;
+}
+
+.paper-admin .card .content {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.paper-admin .card .footer {
+  padding-top: 0;
+  padding-bottom: 18px;
+}
+
+.paper-admin .card .title,
+.paper-admin .card h5,
+.paper-admin .card h6 {
+  color: var(--paper-heading);
+}
+
+.paper-admin-hero-text,
+.paper-admin .text-muted,
+.paper-admin .card-category,
+.paper-admin .stats {
+  color: var(--paper-muted) !important;
+}
+
+.paper-admin-hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(110px, 1fr));
+  gap: 16px;
+  width: min(100%, 420px);
+}
+
+.paper-admin-hero-metrics div {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid var(--paper-border);
+}
+
+.paper-admin-content {
+  min-width: 0;
+}
+
+.paper-admin .icon-big {
+  width: 68px;
+  height: 68px;
+  border-radius: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper-surface-soft);
+}
+
+.paper-admin .icon-big i {
+  font-size: 1.75rem;
+}
+
+.paper-admin .numbers {
+  text-align: right;
+}
+
+.paper-admin .numbers p {
+  margin: 0 0 4px;
+  color: var(--paper-muted);
+}
+
+.paper-admin .numbers strong {
+  font-size: 1.6rem;
+  color: var(--paper-heading);
+}
+
+.paper-admin .table-responsive {
+  border-radius: 16px;
+}
+
+.paper-admin .table {
+  margin-bottom: 0;
+  color: var(--paper-text);
+}
+
+.paper-admin .table thead th {
+  border-top: 0;
+  border-bottom: 1px solid var(--paper-border);
+  color: var(--paper-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.paper-admin .table td,
+.paper-admin .table th {
+  border-color: var(--paper-border);
+  vertical-align: middle;
+}
+
+.paper-admin .list-group-item {
+  border-color: var(--paper-border);
+  color: var(--paper-text);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.paper-admin .form-control,
+.paper-admin .form-select {
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid var(--paper-border);
+  box-shadow: none;
+  color: var(--paper-heading);
+}
+
+.paper-admin .form-control:focus,
+.paper-admin .form-select:focus {
+  border-color: rgba(235, 94, 40, 0.45);
+  box-shadow: 0 0 0 4px rgba(235, 94, 40, 0.12);
+}
+
+.paper-admin .btn {
+  border-radius: 999px;
+  border: 0;
+  font-weight: 700;
+  padding: 10px 16px;
+}
+
+.paper-admin .btn-primary,
+.paper-admin .btn-success {
+  background: linear-gradient(135deg, #eb5e28 0%, #f3bb45 100%);
+  color: #fff;
+}
+
+.paper-admin .btn-danger {
+  background: #d85f45;
+  color: #fff;
+}
+
+.paper-admin .btn-secondary {
+  background: #d9d2c8;
+  color: var(--paper-heading);
+}
+
+.paper-admin .alert {
+  border: 0;
+  border-radius: 16px;
+}
+
+.paper-admin .alert-danger {
+  background: #fdecea;
+  color: #a2392b;
+}
+
+.paper-admin .alert-success {
+  background: #edf8f1;
+  color: #2d7a50;
+}
+
+.paper-admin .badge {
+  padding: 0.5em 0.8em;
+  border-radius: 999px;
+}
+
+.paper-admin .bg-warning {
+  background: #f3bb45 !important;
+}
+
+.paper-admin .bg-success {
+  background: #7ac29a !important;
+}
+
+.paper-admin .bg-danger {
+  background: #eb5e28 !important;
+}
+
+.paper-admin .bg-info {
+  background: #68b3c8 !important;
+}
+
+.paper-admin .paper-admin-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--paper-muted);
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px dashed var(--paper-border);
+  border-radius: 18px;
+}
+
+.paper-admin-overlay {
+  display: none;
+}
+
+@media (max-width: 991.98px) {
+  .paper-admin-sidebar {
+    position: fixed;
+    left: 0;
+    transform: translateX(-100%);
+    transition: transform 180ms ease;
+  }
+
+  .paper-admin.sidebar-open .paper-admin-sidebar {
+    transform: translateX(0);
+  }
+
+  .paper-admin-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(64, 61, 57, 0.36);
+    opacity: 0;
+    pointer-events: none;
+    border: 0;
+    transition: opacity 180ms ease;
+    z-index: 15;
+  }
+
+  .paper-admin.sidebar-open .paper-admin-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .paper-admin-main-panel {
+    width: 100%;
+    padding: 22px 16px 28px;
+  }
+
+  .paper-admin-menu-toggle {
+    display: inline-block;
+  }
+
+  .paper-admin-topbar,
+  .paper-admin-hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .paper-admin-topbar-right,
+  .paper-admin-hero-metrics {
+    width: 100%;
+  }
+
+  .paper-admin-hero-metrics {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,6 @@
 
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 
 const Register = () => {
@@ -12,16 +12,22 @@ const Register = () => {
 	const [error, setError] = useState(null);
 	const [success, setSuccess] = useState(false);
 	const history = useHistory();
+	const mountedRef = useRef(true);
+
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => { mountedRef.current = false; };
+	}, []);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setError(null);
-		setSuccess(false);
+		if (mountedRef.current) setError(null);
+		if (mountedRef.current) setSuccess(false);
 		if (password !== confirmPassword) {
-			setError("Passwords do not match");
+			if (mountedRef.current) setError("Passwords do not match");
 			return;
 		}
-		setLoading(true);
+		if (mountedRef.current) setLoading(true);
 		try {
 			const res = await fetch("/api/auth/register", {
 				method: "POST",
@@ -30,12 +36,12 @@ const Register = () => {
 			});
 			const data = await res.json();
 			if (!res.ok) throw new Error(data.message || "Registration failed");
-			setSuccess(true);
-			setTimeout(() => history.push("/login"), 1500);
+			if (mountedRef.current) setSuccess(true);
+			setTimeout(() => { if (mountedRef.current) history.push("/login"); }, 1500);
 		} catch (err) {
-			setError(err.message);
+			if (mountedRef.current) setError(err.message);
 		} finally {
-			setLoading(false);
+			if (mountedRef.current) setLoading(false);
 		}
 	};
 

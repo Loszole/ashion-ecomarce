@@ -1,4 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getProductPrimaryImage } from "../../utils/imageUrl";
+
+const readCart = () => {
+	try {
+		const raw = localStorage.getItem("cart");
+		return raw ? JSON.parse(raw) : [];
+	} catch {
+		return [];
+	}
+};
 
 const Mens = () => {
 	const [products, setProducts] = useState([]);
@@ -8,14 +19,27 @@ const Mens = () => {
 	const [totalPages, setTotalPages] = useState(1);
 	const pageSize = 9;
 
+	const addToCart = (product) => {
+		const items = readCart();
+		const image = getProductPrimaryImage(product, "/img/product/product-1.jpg");
+		const existing = items.find((item) => item._id === product._id);
+
+		const next = existing
+			? items.map((item) => item._id === product._id ? { ...item, qty: Number(item.qty || 1) + 1 } : item)
+			: [...items, { _id: product._id, name: product.name, price: Number(product.price || 0), image, qty: 1 }];
+
+		localStorage.setItem("cart", JSON.stringify(next));
+		window.dispatchEvent(new Event("cartUpdated"));
+	};
+
 	useEffect(() => {
 		setLoading(true);
 		setError(null);
 		fetch(`/api/products?category=men&page=${page}&limit=${pageSize}`)
 			.then(res => res.json())
 			.then(data => {
-				setProducts(data.products);
-				setTotalPages(data.totalPages || 1);
+				setProducts(data.data || []);
+				setTotalPages((data.meta && data.meta.pages) || 1);
 				setLoading(false);
 			})
 			.catch(() => {
@@ -40,17 +64,17 @@ const Mens = () => {
 										<div className="accordion" id="accordionExample">
 											<div className="card">
 												<div className="card-heading active">
-													<a data-toggle="collapse" data-target="#collapseMen">Men</a>
+													<a href="/#" data-toggle="collapse" data-target="#collapseMen" onClick={e => e.preventDefault()}>Men</a>
 												</div>
 												<div id="collapseMen" className="collapse show" data-parent="#accordionExample">
 													<div className="card-body">
 														<ul>
-															<li><a href="#">Coats</a></li>
-															<li><a href="#">Jackets</a></li>
-															<li><a href="#">Shirts</a></li>
-															<li><a href="#">T-shirts</a></li>
-															<li><a href="#">Jeans</a></li>
-															<li><a href="#">Accessories</a></li>
+															<li><Link to="/mens">Coats</Link></li>
+															<li><Link to="/mens">Jackets</Link></li>
+															<li><Link to="/mens">Shirts</Link></li>
+															<li><Link to="/mens">T-shirts</Link></li>
+															<li><Link to="/mens">Jeans</Link></li>
+															<li><Link to="/mens">Accessories</Link></li>
 														</ul>
 													</div>
 												</div>
@@ -113,18 +137,20 @@ const Mens = () => {
 							<div className="alert alert-danger">{error}</div>
 						) : (
 							<div className="row">
-								{products.map(product => (
+								{products.map(product => {
+									const image = getProductPrimaryImage(product, "/img/product/product-1.jpg");
+									return (
 									<div className="col-lg-4 col-md-6 col-sm-6" key={product._id}>
 										<div className="product__item">
-											<div className="product__item__pic set-bg" style={{ backgroundImage: `url(${product.image})` }}>
+												<div className="product__item__pic set-bg" style={{ backgroundImage: `url(${image})` }}>
 												<ul className="product__hover">
-													<li><a href={product.image} className="image-popup"><span className="arrow_expand"></span></a></li>
-													<li><a href="#"><span className="icon_heart_alt"></span></a></li>
-													<li><a href="#"><span className="icon_bag_alt"></span></a></li>
+														<li><a href={image} className="image-popup"><span className="arrow_expand"></span></a></li>
+													<li><Link to="/wishlist"><span className="icon_heart_alt"></span></Link></li>
+													<li><button type="button" className="btn p-0" onClick={() => addToCart(product)}><span className="icon_bag_alt"></span></button></li>
 												</ul>
 											</div>
 											<div className="product__item__text">
-												<h6><a href="#">{product.name}</a></h6>
+												<h6><Link to={`/product/${product._id}`}>{product.name}</Link></h6>
 												<div className="rating">
 													{[...Array(5)].map((_, i) => (
 														<i key={i} className={`fa fa-star${i < (product.rating || 0) ? "" : "-o"}`}></i>
@@ -134,23 +160,25 @@ const Mens = () => {
 											</div>
 										</div>
 									</div>
-								))}
+								);
+							})}
 								<div className="col-lg-12 text-center">
 									<div className="pagination__option">
 										{Array.from({ length: totalPages }, (_, i) => (
-											<a
-												href="#"
+											<button
+												type="button"
 												key={i}
 												className={page === i + 1 ? "active" : ""}
-												onClick={e => { e.preventDefault(); setPage(i + 1); }}
+												onClick={() => setPage(i + 1)}
+												aria-label={`Go to page ${i + 1}`}
 											>
 												{i + 1}
-											</a>
+											</button>
 										))}
 										{page < totalPages && (
-											<a href="#" onClick={e => { e.preventDefault(); setPage(page + 1); }}>
+											<button type="button" onClick={() => setPage(page + 1)} aria-label="Next page">
 												<i className="fa fa-angle-right"></i>
-											</a>
+											</button>
 										)}
 									</div>
 								</div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { fetchAdminJson } from "./adminApi";
 
 const DEFAULT_SECTIONS = [
   { id: "hero", name: "Hero Banner" },
@@ -18,16 +19,20 @@ const HomepageEditor = () => {
   const [newSection, setNewSection] = useState("");
 
   useEffect(() => {
-    fetch("/api/homepage")
-      .then(res => res.json())
+    const controller = new AbortController();
+
+    fetchAdminJson("/api/homepage", { signal: controller.signal })
       .then(data => {
         setSections(data?.layout?.sections || DEFAULT_SECTIONS);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err.name === "AbortError") return;
         setSections(DEFAULT_SECTIONS);
         setLoading(false);
       });
+
+    return () => controller.abort();
   }, []);
 
   const onDragEnd = (result) => {
@@ -41,21 +46,24 @@ const HomepageEditor = () => {
   const handleSave = () => {
     setSuccess("");
     setError(null);
-    fetch("/api/homepage", {
+    fetchAdminJson("/api/homepage", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ layout: { sections } })
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) setSuccess("Homepage layout saved.");
         else setError("Failed to save layout.");
       })
-      .catch(() => setError("Failed to save layout."));
+      .catch((err) => setError(err.message || "Failed to save layout."));
   };
 
   const handleEdit = (idx, value) => {
-    setSections(sections.map((s, i) => i === idx ? { ...s, name: value } : s));
+    if (!value.trim()) {
+      setError("Section name cannot be empty.");
+      return;
+    }
+    setError(null);
+    setSections(sections.map((s, i) => i === idx ? { ...s, name: value.trim() } : s));
   };
 
   const handleRemove = idx => {
@@ -63,8 +71,16 @@ const HomepageEditor = () => {
   };
 
   const handleAdd = () => {
-    if (!newSection.trim()) return;
-    setSections([...sections, { id: `custom_${Date.now()}`, name: newSection }]);
+    if (!newSection.trim()) {
+      setError("Section name cannot be empty.");
+      return;
+    }
+    if (sections.some(s => s.name.toLowerCase() === newSection.toLowerCase())) {
+      setError("Section name already exists.");
+      return;
+    }
+    setError(null);
+    setSections([...sections, { id: `custom_${Date.now()}`, name: newSection.trim() }]);
     setNewSection("");
   };
 

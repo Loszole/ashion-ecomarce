@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { fetchAdminJson } from "./adminApi";
 
 const Settings = () => {
   const [general, setGeneral] = useState({ siteName: "", siteEmail: "" });
@@ -10,19 +11,26 @@ const Settings = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const controller = new AbortController();
+
     Promise.all([
-      fetch("/api/settings/general").then(res => res.json()),
-      fetch("/api/settings/payment").then(res => res.json()),
-      fetch("/api/settings/shipping").then(res => res.json()),
-      fetch("/api/settings/seo").then(res => res.json()),
-      fetch("/api/settings/email").then(res => res.json())
+      fetchAdminJson("/api/settings/general", { signal: controller.signal }),
+      fetchAdminJson("/api/settings/payment", { signal: controller.signal }),
+      fetchAdminJson("/api/settings/shipping", { signal: controller.signal }),
+      fetchAdminJson("/api/settings/seo", { signal: controller.signal }),
+      fetchAdminJson("/api/settings/email", { signal: controller.signal })
     ]).then(([g, p, s, seoData, emailData]) => {
       setGeneral(g || {});
       setPayment(p || {});
       setShipping(s || {});
       setSeo(seoData || {});
       setEmail(emailData || {});
-    }).catch(() => setError("Failed to load settings."));
+    }).catch((err) => {
+      if (err.name === "AbortError") return;
+      setError(err.message || "Failed to load settings.");
+    });
+
+    return () => controller.abort();
   }, []);
 
   const handleGeneral = e => setGeneral({ ...general, [e.target.name]: e.target.value });
@@ -41,17 +49,15 @@ const Settings = () => {
     else if (type === "shipping") data = shipping;
     else if (type === "seo") data = seo;
     else if (type === "email") data = email;
-    fetch(`/api/settings/${type}`, {
+    fetchAdminJson(`/api/settings/${type}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data.success) setSuccess("Settings saved.");
         else setError("Failed to save settings.");
       })
-      .catch(() => setError("Failed to save settings."));
+      .catch((err) => setError(err.message || "Failed to save settings."));
   };
 
   return (

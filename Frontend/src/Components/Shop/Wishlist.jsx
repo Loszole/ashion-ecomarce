@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Wishlist = () => {
   return (
@@ -9,7 +10,7 @@ const Wishlist = () => {
           <div className="row">
             <div className="col-lg-12">
               <div className="breadcrumb__links">
-                <a href="./index.html"><i className="fa fa-home"></i> Home</a>
+                <Link to="/"><i className="fa fa-home"></i> Home</Link>
                 <span>Wishlist</span>
               </div>
             </div>
@@ -51,7 +52,7 @@ const Wishlist = () => {
           <div className="row">
             <div className="col-lg-6 col-md-6 col-sm-6">
               <div className="cart__btn">
-                <a href="#">Continue Shopping</a>
+                <Link to="/shop">Continue Shopping</Link>
               </div>
             </div>
           </div>

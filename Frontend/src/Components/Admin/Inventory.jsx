@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { fetchAdminJson, toArray } from "./adminApi";
 
 const Inventory = () => {
   const [products, setProducts] = useState([]);
@@ -9,16 +10,20 @@ const Inventory = () => {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    fetch("/api/products")
-      .then(res => res.json())
+    const controller = new AbortController();
+
+    fetchAdminJson("/api/products", { signal: controller.signal })
       .then(data => {
-        setProducts(data);
+        setProducts(toArray(data));
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to load inventory");
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setError(err.message || "Failed to load inventory");
         setLoading(false);
       });
+
+    return () => controller.abort();
   }, [success]);
 
   const handleAddInventory = (e) => {
@@ -26,15 +31,12 @@ const Inventory = () => {
     if (!selectedProduct || addAmount <= 0) return;
     setSuccess("");
     setError(null);
-    fetch(`/api/products/${selectedProduct}`, {
+    const product = products.find(p => p._id === selectedProduct);
+    const currentStock = product?.stock || 0;
+    fetchAdminJson(`/api/products/${selectedProduct}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        // 'Authorization': `Bearer ${token}` // Uncomment and set token if needed
-      },
-      body: JSON.stringify({ stock: addAmount })
+      body: JSON.stringify({ stock: currentStock + addAmount })
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) {
           setSuccess("Inventory updated successfully.");
@@ -44,7 +46,7 @@ const Inventory = () => {
           setError("Failed to update inventory.");
         }
       })
-      .catch(() => setError("Failed to update inventory."));
+      .catch((err) => setError(err.message || "Failed to update inventory."));
   };
 
   return (
@@ -94,7 +96,7 @@ const Inventory = () => {
                   <td>{product.name}</td>
                   <td>{product.category || "-"}</td>
                   <td>{product.stock}</td>
-                  <td>${product.price.toLocaleString()}</td>
+                  <td>${Number(product.price || 0).toLocaleString()}</td>
                   <td>{new Date(product.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))

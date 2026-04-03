@@ -12,28 +12,42 @@ const Blog = () => {
     const pageSize = 9;
 
     useEffect(() => {
+        const controller = new AbortController();
         setLoading(true);
         setError(null);
-        fetch(`/api/blog?page=${page}&limit=${pageSize}`)
-            .then(res => res.json())
-            .then(data => {
-                if (page === 1) {
-                    setPosts(data.posts);
-                } else {
-                    setPosts(prev => [...prev, ...data.posts]);
+        fetch(`/api/blog?page=${page}&limit=${pageSize}`, { signal: controller.signal })
+            .then(async (res) => {
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch blog posts (${res.status})`);
                 }
-                setHasMore(data.posts.length === pageSize);
+                return res.json();
+            })
+            .then(data => {
+                const nextPosts = Array.isArray(data.posts) ? data.posts : [];
+                if (page === 1) {
+                    setPosts(nextPosts);
+                } else {
+                    setPosts(prev => [...prev, ...nextPosts]);
+                }
+                setHasMore(nextPosts.length === pageSize);
                 setLoading(false);
             })
-            .catch(() => {
+            .catch((err) => {
+                if (err.name === "AbortError") {
+                    return;
+                }
                 setError("Failed to load blog posts.");
                 setLoading(false);
             });
+
+        return () => {
+            controller.abort();
+        };
     }, [page]);
 
     // Group posts into columns for layout
     const columns = [[], [], []];
-    posts.forEach((post, idx) => {
+    (Array.isArray(posts) ? posts : []).forEach((post, idx) => {
         columns[idx % 3].push(post);
     });
 

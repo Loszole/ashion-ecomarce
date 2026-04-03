@@ -1,0 +1,104 @@
+@font-face {
+  font-family: "themify";
+  src: url("./fonts/themify.eot");
+  src:
+    url("./fonts/themify.eot?#iefix") format("embedded-opentype"),
+    url("./fonts/themify.woff") format("woff"),
+    url("./fonts/themify.ttf") format("truetype"),
+    url("./fonts/themify.svg#themify") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="ti-"],
+[class*=" ti-"] {
+  font-family: "themify";
+  speak: none;
+  font-style: normal;
+  font-weight: bold;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ti-user:before {
+  content: "\e602";
+}
+
+.ti-tag:before {
+  content: "\e608";
+}
+
+.ti-star:before {
+  content: "\e60a";
+}
+
+.ti-shopping-cart:before {
+  content: "\e60d";
+}
+
+.ti-settings:before {
+  content: "\e60f";
+}
+
+.ti-reload:before {
+  content: "\e619";
+}
+
+.ti-arrow-left:before {
+  content: "\e629";
+}
+
+.ti-layout:before {
+  content: "\e62e";
+}
+
+.ti-view-grid:before {
+  content: "\e669";
+}
+
+.ti-panel:before {
+  content: "\e686";
+}
+
+.ti-package:before {
+  content: "\e687";
+}
+
+.ti-calendar:before {
+  content: "\e6b6";
+}
+
+.ti-bar-chart:before {
+  content: "\e6ba";
+}
+
+.ti-archive:before {
+  content: "\e6bf";
+}
+
+.ti-agenda:before {
+  content: "\e6c7";
+}
+
+.ti-write:before {
+  content: "\e6c8";
+}
+
+.ti-wallet:before {
+  content: "\e6cd";
+}
+
+.ti-palette:before {
+  content: "\e6e0";
+}
+
+.ti-layout-grid2:before {
+  content: "\e709";
+}
+
+.ti-email:before {
+  content: "\e75a";
+}

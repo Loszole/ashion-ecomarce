@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { fetchAdminJson } from "./adminApi";
 
 const Appearance = () => {
   const [banner, setBanner] = useState(null);
@@ -22,50 +23,45 @@ const Appearance = () => {
     if (!banner) return setError("Please select a banner image.");
     const formData = new FormData();
     formData.append("banner", banner);
-    fetch("/api/appearance/banner", {
+    fetchAdminJson("/api/appearance/banner", {
       method: "POST",
       body: formData
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data.success) setSuccess("Banner uploaded.");
         else setError("Failed to upload banner.");
       })
-      .catch(() => setError("Failed to upload banner."));
+      .catch((err) => setError(err.message || "Failed to upload banner."));
   };
 
   const handleColorSubmit = e => {
     e.preventDefault();
     setSuccess("");
     setError("");
-    fetch("/api/appearance/colors", {
+    fetchAdminJson("/api/appearance/colors", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(color)
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data.success) setSuccess("Colors updated.");
         else setError("Failed to update colors.");
       })
-      .catch(() => setError("Failed to update colors."));
+      .catch((err) => setError(err.message || "Failed to update colors."));
   };
 
   const handleLayoutSubmit = e => {
     e.preventDefault();
     setSuccess("");
     setError("");
-    fetch("/api/homepage", {
+    fetchAdminJson("/api/homepage", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ layout })
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) setSuccess("Homepage layout updated.");
         else setError("Failed to update layout.");
       })
-      .catch(() => setError("Failed to update layout."));
+      .catch((err) => setError(err.message || "Failed to update layout."));
   };
 
   return (

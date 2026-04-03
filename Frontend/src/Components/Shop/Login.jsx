@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 
 const Login = () => {
@@ -8,6 +8,12 @@ const Login = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const history = useHistory();
+	const mountedRef = useRef(true);
+
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => { mountedRef.current = false; };
+	}, []);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -21,12 +27,18 @@ const Login = () => {
 			});
 			const data = await res.json();
 			if (!res.ok) throw new Error(data.message || "Login failed");
-			// Optionally store token/user info here
-			history.push("/");
+			localStorage.setItem("token", data.token);
+			localStorage.setItem("user", JSON.stringify(data.user));
+			const role = (data.user && data.user.role) || "user";
+			if (["admin", "superadmin", "editor"].includes(role)) {
+				history.push("/admin");
+			} else {
+				history.push("/");
+			}
 		} catch (err) {
-			setError(err.message);
+			if (mountedRef.current) setError(err.message);
 		} finally {
-			setLoading(false);
+			if (mountedRef.current) setLoading(false);
 		}
 	};
 

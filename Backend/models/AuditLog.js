@@ -7,4 +7,9 @@ const auditLogSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Indexes for faster filtering and sorting
+auditLogSchema.index({ user: 1, createdAt: -1 });
+auditLogSchema.index({ action: 1 });
+auditLogSchema.index({ createdAt: -1 });
+
 export default mongoose.model('AuditLog', auditLogSchema);

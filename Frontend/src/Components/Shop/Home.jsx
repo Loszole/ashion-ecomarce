@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Home = () => {
 	return (
@@ -12,7 +13,7 @@ const Home = () => {
                                     <div className="categories__text">
                                         <h1>Women’s fashion</h1>
                                         <p>Sitamet, consectetur adipiscing elit, sed do eiusmod tempor incidid-unt labore edolore magna aliquapendisse ultrices gravida.</p>
-                                        <a href="#">Shop now</a>
+                                        <Link to="/shop">Shop now</Link>
                                     </div>
                                 </div>
                             </div>
@@ -23,7 +24,7 @@ const Home = () => {
                                             <div className="categories__text">
                                                 <h4>Men’s fashion</h4>
                                                 <p>358 items</p>
-                                                <a href="#">Shop now</a>
+                                                <Link to="/mens">Shop now</Link>
                                             </div>
                                         </div>
                                     </div>
@@ -32,7 +33,7 @@ const Home = () => {
                                             <div className="categories__text">
                                                 <h4>Kid’s fashion</h4>
                                                 <p>273 items</p>
-                                                <a href="#">Shop now</a>
+                                                <Link to="/kids">Shop now</Link>
                                             </div>
                                         </div>
                                     </div>
@@ -41,7 +42,7 @@ const Home = () => {
                                             <div className="categories__text">
                                                 <h4>Cosmetics</h4>
                                                 <p>159 items</p>
-                                                <a href="#">Shop now</a>
+                                                <Link to="/shop">Shop now</Link>
                                             </div>
                                         </div>
                                     </div>
@@ -50,7 +51,7 @@ const Home = () => {
                                             <div className="categories__text">
                                                 <h4>Accessories</h4>
                                                 <p>792 items</p>
-                                                <a href="#">Shop now</a>
+                                                <Link to="/shop">Shop now</Link>
                                             </div>
                                         </div>
                                     </div>
@@ -90,12 +91,12 @@ const Home = () => {
                                         <div className="label new">New</div>
                                         <ul className="product__hover">
                                             <li><a href="img/product/product-1.jpg" className="image-popup"><span className="arrow_expand"></span></a></li>
-                                            <li><a href="#"><span className="icon_heart_alt"></span></a></li>
-                                            <li><a href="#"><span className="icon_bag_alt"></span></a></li>
+                                            <li><Link to="/wishlist"><span className="icon_heart_alt"></span></Link></li>
+                                            <li><Link to="/cart"><span className="icon_bag_alt"></span></Link></li>
                                         </ul>
                                     </div>
                                     <div className="product__item__text">
-                                        <h6><a href="#">Buttons tweed blazer</a></h6>
+                                        <h6><Link to="/shop">Buttons tweed blazer</Link></h6>
                                         <div className="rating">
                                             <i className="fa fa-star"></i>
                                             <i className="fa fa-star"></i>
@@ -123,21 +124,21 @@ const Home = () => {
                                         <div className="banner__text">
                                             <span>The Chloe Collection</span>
                                             <h1>The Project Jacket</h1>
-                                            <a href="#">Shop now</a>
+                                            <Link to="/shop">Shop now</Link>
                                         </div>
                                     </div>
                                     <div className="banner__item">
                                         <div className="banner__text">
                                             <span>The Chloe Collection</span>
                                             <h1>The Project Jacket</h1>
-                                            <a href="#">Shop now</a>
+                                            <Link to="/shop">Shop now</Link>
                                         </div>
                                     </div>
                                     <div className="banner__item">
                                         <div className="banner__text">
                                             <span>The Chloe Collection</span>
                                             <h1>The Project Jacket</h1>
-                                            <a href="#">Shop now</a>
+                                            <Link to="/shop">Shop now</Link>
                                         </div>
                                     </div>
                                 </div>
@@ -215,7 +216,7 @@ const Home = () => {
                                             <p>Sec</p>
                                         </div>
                                     </div>
-                                    <a href="#">Shop now</a>
+                                    <Link to="/shop">Shop now</Link>
                                 </div>
                             </div>
                         </div>

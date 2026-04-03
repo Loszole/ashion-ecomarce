@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 const Blog_Details = () => {
     const { id } = useParams();
@@ -71,7 +71,7 @@ const Blog_Details = () => {
                                 )}
                                 <div className="blog__details__tags">
                                     {blog.tags && blog.tags.map(tag => (
-                                        <a key={tag} href="#">{tag}</a>
+                                        <Link key={tag} to={`/blog?tag=${encodeURIComponent(tag)}`}>{tag}</Link>
                                     ))}
                                 </div>
                                 <div className="blog__details__btns">
@@ -79,14 +79,14 @@ const Blog_Details = () => {
                                         <div className="col-lg-6 col-md-6 col-sm-6">
                                             <div className="blog__details__btn__item">
                                                 {blog.prevId && (
-                                                    <h6><a href={`/blog/${blog.prevId}`}><i className="fa fa-angle-left"></i> Previous posts</a></h6>
+                                                    <h6><Link to={`/blog/${blog.prevId}`}><i className="fa fa-angle-left"></i> Previous posts</Link></h6>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="col-lg-6 col-md-6 col-sm-6">
                                             <div className="blog__details__btn__item blog__details__btn__item--next">
                                                 {blog.nextId && (
-                                                    <h6><a href={`/blog/${blog.nextId}`}>Next posts <i className="fa fa-angle-right"></i></a></h6>
+                                                    <h6><Link to={`/blog/${blog.nextId}`}>Next posts <i className="fa fa-angle-right"></i></Link></h6>
                                                 )}
                                             </div>
                                         </div>
@@ -94,7 +94,7 @@ const Blog_Details = () => {
                                 </div>
                                 <div className="blog__details__comment">
                                     <h5>{comments.length} Comment{comments.length !== 1 ? "s" : ""}</h5>
-                                    <a href="#comment-form" className="leave-btn">Leave a comment</a>
+                                    <a href={`/blog/${id}#comment-form`} className="leave-btn">Leave a comment</a>
                                     {comments.map((c, idx) => (
                                         <div key={c._id || idx} className={`blog__comment__item${c.replyTo ? " blog__comment__item--reply" : ""}`}>
                                             <div className="blog__comment__item__pic">
@@ -122,7 +122,7 @@ const Blog_Details = () => {
                                     </div>
                                     <ul>
                                         {sidebar.categories.map(cat => (
-                                            <li key={cat.name}><a href="#">{cat.name} <span>({cat.count})</span></a></li>
+                                            <li key={cat.name}><Link to={`/blog?category=${encodeURIComponent(cat.name)}`}>{cat.name} <span>({cat.count})</span></Link></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -131,7 +131,7 @@ const Blog_Details = () => {
                                         <h4>Feature posts</h4>
                                     </div>
                                     {sidebar.featured.map(fp => (
-                                        <a key={fp._id} href={`/blog/${fp._id}`} className="blog__feature__item">
+                                        <Link key={fp._id} to={`/blog/${fp._id}`} className="blog__feature__item">
                                             <div className="blog__feature__item__pic">
                                                 <img src={fp.image || "/img/blog/sidebar/fp-1.jpg"} alt="" />
                                             </div>
@@ -139,7 +139,7 @@ const Blog_Details = () => {
                                                 <h6>{fp.title}</h6>
                                                 <span>{new Date(fp.createdAt).toLocaleDateString()}</span>
                                             </div>
-                                        </a>
+                                        </Link>
                                     ))}
                                 </div>
                                 <div className="blog__sidebar__item">
@@ -148,7 +148,7 @@ const Blog_Details = () => {
                                     </div>
                                     <div className="blog__sidebar__tags">
                                         {sidebar.tags.map(tag => (
-                                            <a key={tag} href="#">{tag}</a>
+                                            <Link key={tag} to={`/blog?tag=${encodeURIComponent(tag)}`}>{tag}</Link>
                                         ))}
                                     </div>
                                 </div>

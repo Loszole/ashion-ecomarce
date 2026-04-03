@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const OrdersTracking = () => {
@@ -6,6 +6,39 @@ const OrdersTracking = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [order, setOrder] = useState(null);
+    const [myOrders, setMyOrders] = useState([]);
+    const [myOrdersLoading, setMyOrdersLoading] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            return;
+        }
+
+        const loadMyOrders = async () => {
+            setMyOrdersLoading(true);
+            try {
+                const res = await fetch("/api/orders/my", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    throw new Error(data.message || "Unable to load your orders.");
+                }
+
+                setMyOrders(Array.isArray(data.data) ? data.data : []);
+            } catch {
+                setMyOrders([]);
+            } finally {
+                setMyOrdersLoading(false);
+            }
+        };
+
+        loadMyOrders();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -61,6 +94,23 @@ const OrdersTracking = () => {
                     <div className="row justify-content-center">
                         <div className="col-lg-8">
                             <h4 className="mb-4">Track Your Order</h4>
+
+                            {(myOrdersLoading || myOrders.length > 0) && (
+                                <div className="card p-3 mb-4">
+                                    <h5 className="mb-3">My Recent Orders</h5>
+                                    {myOrdersLoading ? (
+                                        <p className="mb-0">Loading your orders...</p>
+                                    ) : (
+                                        <ul className="mb-0">
+                                            {myOrders.slice(0, 5).map((item) => (
+                                                <li key={item._id}>
+                                                    <strong>{item._id}</strong> - {item.status} - ${Number(item.total || 0).toFixed(2)}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            )}
 
                             {error && <div className="alert alert-danger">{error}</div>}
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { fetchAdminJson, toArray } from "./adminApi";
 
 const Discounts = () => {
   const [discounts, setDiscounts] = useState([]);
@@ -11,16 +12,20 @@ const Discounts = () => {
   const [filter, setFilter] = useState({ status: "all", type: "all", code: "" });
 
   useEffect(() => {
-    fetch("/api/discounts")
-      .then(res => res.json())
+    const controller = new AbortController();
+
+    fetchAdminJson("/api/discounts", { signal: controller.signal })
       .then(data => {
-        setDiscounts(data);
+        setDiscounts(toArray(data));
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to load discounts");
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setError(err.message || "Failed to load discounts");
         setLoading(false);
       });
+
+    return () => controller.abort();
   }, [success]);
 
   const handleChange = e => {
@@ -31,12 +36,10 @@ const Discounts = () => {
     e.preventDefault();
     setSuccess("");
     setError(null);
-    fetch("/api/discounts", {
+    fetchAdminJson("/api/discounts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form)
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) {
           setSuccess("Discount created successfully.");
@@ -45,7 +48,7 @@ const Discounts = () => {
           setError("Failed to create discount.");
         }
       })
-      .catch(() => setError("Failed to create discount."));
+        .catch((err) => setError(err.message || "Failed to create discount."));
   };
 
   const handleEdit = (d) => {
@@ -59,12 +62,10 @@ const Discounts = () => {
 
   const handleEditSubmit = e => {
     e.preventDefault();
-    fetch(`/api/discounts/${editId}`, {
+    fetchAdminJson(`/api/discounts/${editId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editForm)
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) {
           setSuccess("Discount updated.");
@@ -73,15 +74,14 @@ const Discounts = () => {
           setError("Failed to update discount.");
         }
       })
-      .catch(() => setError("Failed to update discount."));
+      .catch((err) => setError(err.message || "Failed to update discount."));
   };
 
   const handleDelete = id => {
     if (!window.confirm("Delete this discount?")) return;
-    fetch(`/api/discounts/${id}`, { method: "DELETE" })
-      .then(res => res.json())
+    fetchAdminJson(`/api/discounts/${id}`, { method: "DELETE" })
       .then(() => setSuccess("Discount deleted."))
-      .catch(() => setError("Failed to delete discount."));
+      .catch((err) => setError(err.message || "Failed to delete discount."));
   };
 
   const filtered = discounts.filter(d =>

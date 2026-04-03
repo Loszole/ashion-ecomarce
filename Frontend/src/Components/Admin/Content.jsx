@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { fetchAdminJson, toArray } from "./adminApi";
 
 const Content = () => {
   const [posts, setPosts] = useState([]);
@@ -10,16 +11,20 @@ const Content = () => {
   const [editForm, setEditForm] = useState({ title: "", type: "blog", content: "" });
 
   useEffect(() => {
-    fetch("/api/content")
-      .then(res => res.json())
+    const controller = new AbortController();
+
+    fetchAdminJson("/api/content", { signal: controller.signal })
       .then(data => {
-        setPosts(data);
+        setPosts(toArray(data));
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to load content");
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setError(err.message || "Failed to load content");
         setLoading(false);
       });
+
+    return () => controller.abort();
   }, [success]);
 
   const handleChange = e => {
@@ -30,12 +35,10 @@ const Content = () => {
     e.preventDefault();
     setSuccess("");
     setError(null);
-    fetch("/api/content", {
+    fetchAdminJson("/api/content", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form)
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) {
           setSuccess("Content saved successfully.");
@@ -44,7 +47,7 @@ const Content = () => {
           setError("Failed to save content.");
         }
       })
-      .catch(() => setError("Failed to save content."));
+        .catch((err) => setError(err.message || "Failed to save content."));
   };
 
   const handleEdit = (post) => {
@@ -58,12 +61,10 @@ const Content = () => {
 
   const handleEditSubmit = e => {
     e.preventDefault();
-    fetch(`/api/content/${editId}`, {
+    fetchAdminJson(`/api/content/${editId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editForm)
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) {
           setSuccess("Content updated.");
@@ -72,15 +73,14 @@ const Content = () => {
           setError("Failed to update content.");
         }
       })
-      .catch(() => setError("Failed to update content."));
+      .catch((err) => setError(err.message || "Failed to update content."));
   };
 
   const handleDelete = id => {
     if (!window.confirm("Delete this content?")) return;
-    fetch(`/api/content/${id}`, { method: "DELETE" })
-      .then(res => res.json())
+    fetchAdminJson(`/api/content/${id}`, { method: "DELETE" })
       .then(() => setSuccess("Content deleted."))
-      .catch(() => setError("Failed to delete content."));
+      .catch((err) => setError(err.message || "Failed to delete content."));
   };
 
   return (
@@ -155,9 +155,9 @@ const Content = () => {
                   ) : (
                     <>
                       <td>{p.title}</td>
-                      <td>{p.type.charAt(0).toUpperCase() + p.type.slice(1)}</td>
+                      <td>{p.type ? p.type.charAt(0).toUpperCase() + p.type.slice(1) : "-"}</td>
                       <td style={{maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{p.content}</td>
-                      <td>{new Date(p.createdAt).toLocaleDateString()}</td>
+                      <td>{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "-"}</td>
                       <td>
                         <button className="btn btn-link btn-sm me-2" onClick={() => handleEdit(p)}>Edit</button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>Delete</button>

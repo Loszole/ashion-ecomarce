@@ -1,16 +1,16 @@
 import HomepageLayout from '../models/HomepageLayout.js';
 import AuditLog from '../models/AuditLog.js';
 
-export const getHomepageLayout = async (req, res) => {
+export const getHomepageLayout = async (req, res, next) => {
   try {
     const layout = await HomepageLayout.findOne().sort({ updatedAt: -1 });
     res.json(layout);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 };
 
-export const updateHomepageLayout = async (req, res) => {
+export const updateHomepageLayout = async (req, res, next) => {
   try {
     const { layout } = req.body;
     const homepageLayout = new HomepageLayout({ layout, updatedBy: req.user._id });
@@ -18,6 +18,6 @@ export const updateHomepageLayout = async (req, res) => {
     await AuditLog.create({ user: req.user._id, action: 'update_homepage_layout', details: { layoutId: homepageLayout._id } });
     res.json(homepageLayout);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 };

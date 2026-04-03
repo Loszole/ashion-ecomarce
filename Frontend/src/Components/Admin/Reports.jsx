@@ -1,7 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  LineChart,
+  Line
+} from "recharts";
 import jsPDF from "jspdf";
 import { saveAs } from "file-saver";
+import { fetchAdminJson, toArray } from "./adminApi";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
@@ -15,24 +32,49 @@ const Reports = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+    let isMounted = true;
+
     setLoading(true);
-    Promise.all([
-      fetch(`/api/reports/sales?period=${filter.period}&category=${filter.category}`).then(res => res.json()),
-      fetch(`/api/reports/traffic?period=${filter.period}`).then(res => res.json()),
-      fetch(`/api/reports/products?period=${filter.period}&category=${filter.category}`).then(res => res.json()),
-      fetch(`/api/categories`).then(res => res.json())
+    setError(null);
+
+    Promise.allSettled([
+      fetchAdminJson(`/api/reports/sales?period=${filter.period}&category=${filter.category}`, { signal: controller.signal }),
+      fetchAdminJson(`/api/reports/traffic?period=${filter.period}`, { signal: controller.signal }),
+      fetchAdminJson(`/api/reports/products?period=${filter.period}&category=${filter.category}`, { signal: controller.signal }),
+      fetchAdminJson(`/api/categories`, { signal: controller.signal })
     ])
-      .then(([salesData, trafficData, productData, cats]) => {
-        setSales(salesData || []);
-        setTraffic(trafficData || []);
-        setProducts(productData || []);
-        setCategories(cats || []);
+      .then((results) => {
+        if (!isMounted) return;
+        const [salesResult, trafficResult, productResult, categoriesResult] = results;
+
+        const salesData = salesResult.status === "fulfilled" ? salesResult.value : [];
+        const trafficData = trafficResult.status === "fulfilled" ? trafficResult.value : [];
+        const productData = productResult.status === "fulfilled" ? productResult.value : [];
+        const cats = categoriesResult.status === "fulfilled" ? categoriesResult.value : [];
+
+        setSales(toArray(salesData));
+        setTraffic(toArray(trafficData));
+        setProducts(toArray(productData));
+        setCategories(toArray(cats));
+
+        if (results.some((r) => r.status === "rejected")) {
+          setError("Some report endpoints are unavailable. Showing available data.");
+        }
+
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to load reports");
+      .catch((err) => {
+        if (!isMounted) return;
+        if (err.name === "AbortError") return;
+        setError(err.message || "Failed to load reports");
         setLoading(false);
       });
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [filter]);
 
   const handleFilter = e => {
@@ -101,7 +143,7 @@ const Reports = () => {
             <div className="col-md-6">
               <div className="card p-3">
                 <h5>Sales</h5>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={250} debounce={120}>
                   <AreaChart data={sales} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -116,7 +158,7 @@ const Reports = () => {
                     <Area type="monotone" dataKey="total" stroke="#8884d8" fillOpacity={1} fill="url(#colorSales)" />
                   </AreaChart>
                 </ResponsiveContainer>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={150} debounce={120}>
                   <BarChart data={sales} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <XAxis dataKey="label" />
                     <YAxis />
@@ -125,13 +167,13 @@ const Reports = () => {
                     <Bar dataKey="total" fill="#FF8042" />
                   </BarChart>
                 </ResponsiveContainer>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={150} debounce={120}>
                   <LineChart data={sales} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <XAxis dataKey="label" />
                     <YAxis />
                     <CartesianGrid strokeDasharray="3 3" />
                     <Tooltip />
-                    <Bar dataKey="total" fill="#8884d8" />
+                    <Line type="monotone" dataKey="total" stroke="#8884d8" strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -139,7 +181,7 @@ const Reports = () => {
             <div className="col-md-6">
               <div className="card p-3">
                 <h5>Traffic</h5>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={250} debounce={120}>
                   <BarChart data={traffic} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <XAxis dataKey="label" />
                     <YAxis />
@@ -148,13 +190,13 @@ const Reports = () => {
                     <Bar dataKey="visits" fill="#00C49F" />
                   </BarChart>
                 </ResponsiveContainer>
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={150} debounce={120}>
                   <LineChart data={traffic} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <XAxis dataKey="label" />
                     <YAxis />
                     <CartesianGrid strokeDasharray="3 3" />
                     <Tooltip />
-                    <Bar dataKey="visits" fill="#00C49F" />
+                    <Line type="monotone" dataKey="visits" stroke="#00C49F" strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -164,7 +206,7 @@ const Reports = () => {
             <div className="col-md-6">
               <div className="card p-3">
                 <h5>Top Products</h5>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={250} debounce={120}>
                   <PieChart>
                     <Pie data={products} dataKey="sold" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
                       {products.map((entry, index) => (

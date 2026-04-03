@@ -27,7 +27,7 @@ import Contact from "./Components/Shop/Contact";
 import Admin from "./Components/Admin/Admin";
 import Login from "./Components/Shop/Login";
 import Register from "./Components/Shop/Register";
-import Prodect_Details from "./Components/Shop/Prodect_Details";
+import Product_Details from "./Components/Shop/Product_Details";
 import Blog_Details from "./Components/Shop/Blog_Details";
 import Checkout from "./Components/Shop/Checkout";
 import OrdersTracking from "./Components/Shop/OrdersTracking";
@@ -87,7 +87,7 @@ const App = () => {
 				   <Route path="/checkout" component={withLayout(Checkout)} />
 				   <Route path="/orders-tracking" component={withLayout(OrdersTracking)} />
 				   <Route path="/wishlist" component={withLayout(Wishlist)} />
-				   <Route path="/product/:id" component={withLayout(Prodect_Details)} />
+				   <Route path="/product/:id" component={withLayout(Product_Details)} />
 				   <Route path="/blog/:id" component={withLayout(Blog_Details)} />
 				   <Route component={withLayout(NotFound)} />
 			   </Switch>

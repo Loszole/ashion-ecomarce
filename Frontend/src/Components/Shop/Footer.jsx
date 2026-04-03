@@ -60,11 +60,11 @@ const Footer = () => {
                                 <button type="submit" className="site-btn">Subscribe</button>
                             </form>
                             <div className="footer__social">
-                                <a href="#" aria-label="Facebook"><span className="fa fa-facebook" /></a>
-                                <a href="#" aria-label="Twitter"><span className="fa fa-twitter" /></a>
-                                <a href="#" aria-label="YouTube"><span className="fa fa-youtube-play" /></a>
-                                <a href="#" aria-label="Instagram"><span className="fa fa-instagram" /></a>
-                                <a href="#" aria-label="Pinterest"><span className="fa fa-pinterest" /></a>
+                                <a href="https://facebook.com" aria-label="Facebook" target="_blank" rel="noreferrer"><span className="fa fa-facebook" /></a>
+                                <a href="https://x.com" aria-label="Twitter" target="_blank" rel="noreferrer"><span className="fa fa-twitter" /></a>
+                                <a href="https://youtube.com" aria-label="YouTube" target="_blank" rel="noreferrer"><span className="fa fa-youtube-play" /></a>
+                                <a href="https://instagram.com" aria-label="Instagram" target="_blank" rel="noreferrer"><span className="fa fa-instagram" /></a>
+                                <a href="https://pinterest.com" aria-label="Pinterest" target="_blank" rel="noreferrer"><span className="fa fa-pinterest" /></a>
                             </div>
                         </div>
                     </div>

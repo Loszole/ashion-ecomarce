@@ -1,7 +1,8 @@
 import Category from '../models/Category.js';
 import AuditLog from '../models/AuditLog.js';
+import AppError from '../utils/AppError.js';
 
-export const createCategory = async (req, res) => {
+export const createCategory = async (req, res, next) => {
   try {
     const { name, description } = req.body;
     const category = new Category({ name, description });
@@ -9,49 +10,52 @@ export const createCategory = async (req, res) => {
     await AuditLog.create({ user: req.user._id, action: 'create_category', details: { categoryId: category._id } });
     res.status(201).json(category);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 };
 
-export const getCategories = async (req, res) => {
+export const getCategories = async (req, res, next) => {
   try {
     const categories = await Category.find();
     res.json(categories);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 };
 
-export const getCategory = async (req, res) => {
+export const getCategory = async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id);
-    if (!category) return res.status(404).json({ message: 'Category not found' });
+    if (!category) return next(new AppError('Category not found', 404));
+
     res.json(category);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 };
 
-export const updateCategory = async (req, res) => {
+export const updateCategory = async (req, res, next) => {
   try {
     const { name, description } = req.body;
     const update = { name, description, updatedAt: Date.now() };
     const category = await Category.findByIdAndUpdate(req.params.id, update, { new: true });
-    if (!category) return res.status(404).json({ message: 'Category not found' });
+    if (!category) return next(new AppError('Category not found', 404));
+
     await AuditLog.create({ user: req.user._id, action: 'update_category', details: { categoryId: category._id } });
     res.json(category);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 };
 
-export const deleteCategory = async (req, res) => {
+export const deleteCategory = async (req, res, next) => {
   try {
     const category = await Category.findByIdAndDelete(req.params.id);
-    if (!category) return res.status(404).json({ message: 'Category not found' });
+    if (!category) return next(new AppError('Category not found', 404));
+
     await AuditLog.create({ user: req.user._id, action: 'delete_category', details: { categoryId: category._id } });
     res.json({ message: 'Category deleted' });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 };

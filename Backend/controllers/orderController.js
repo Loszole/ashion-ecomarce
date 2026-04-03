@@ -26,6 +26,15 @@ const ensurePaymentMethodEnabled = (paymentMethod, config) => {
   throw new AppError(`Payment method '${paymentMethod}' is not enabled`, 400);
 };
 
+const supportsTransactions = async () => {
+  try {
+    const hello = await mongoose.connection.db.admin().command({ hello: 1 });
+    return Boolean(hello?.setName || hello?.msg === 'isdbgrid');
+  } catch (err) {
+    return false;
+  }
+};
+
 const validateAndPrepareProducts = async (products, session) => {
   const preparedItems = [];
   let subtotal = 0;
@@ -57,64 +66,98 @@ const validateAndPrepareProducts = async (products, session) => {
   };
 };
 
-const createOrderTransaction = async ({ userId, products, shippingAddress, paymentMethod, shippingCost = 0, taxAmount = 0, contactEmail = '', contactPhone = '' }) => {
+const runOrderCreation = async ({ userId = null, products, shippingAddress, paymentMethod, shippingCost = 0, taxAmount = 0, contactName = '', contactEmail = '', contactPhone = '', session = null }) => {
+  const prepared = await validateAndPrepareProducts(products, session);
+  const normalizedShipping = roundCurrency(shippingCost);
+  const normalizedTax = roundCurrency(taxAmount);
+  const total = roundCurrency(prepared.subtotal + normalizedShipping + normalizedTax);
+
+  const [createdOrder] = await Order.create(
+    [
+      {
+        user: userId || undefined,
+        products: prepared.items.map((item) => ({
+          product: item.product,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        subtotal: prepared.subtotal,
+        shippingCost: normalizedShipping,
+        taxAmount: normalizedTax,
+        total,
+        shippingAddress,
+        paymentMethod,
+        contactName,
+        contactEmail,
+        contactPhone,
+        paymentStatus: paymentMethod === 'cod' ? 'pending' : 'pending'
+      }
+    ],
+    session ? { session } : undefined
+  );
+
+  for (const item of prepared.items) {
+    item.stockDocument.stock -= item.quantity;
+    await item.stockDocument.save(session ? { session } : undefined);
+  }
+
+  if (userId) {
+    await AuditLog.create(
+      [
+        {
+          user: userId,
+          action: 'create_order',
+          details: { orderId: createdOrder._id, paymentMethod }
+        }
+      ],
+      session ? { session } : undefined
+    );
+  }
+
+  return createdOrder;
+};
+
+const createOrderTransaction = async ({ userId = null, products, shippingAddress, paymentMethod, shippingCost = 0, taxAmount = 0, contactName = '', contactEmail = '', contactPhone = '' }) => {
   const paymentConfig = await getPaymentConfig();
   ensurePaymentMethodEnabled(paymentMethod, paymentConfig);
+
+  if (!(await supportsTransactions())) {
+    return runOrderCreation({
+      userId,
+      products,
+      shippingAddress,
+      paymentMethod,
+      shippingCost,
+      taxAmount,
+      contactName,
+      contactEmail,
+      contactPhone
+    });
+  }
 
   const session = await mongoose.startSession();
   let createdOrder;
 
   try {
     await session.withTransaction(async () => {
-      const prepared = await validateAndPrepareProducts(products, session);
-      const normalizedShipping = roundCurrency(shippingCost);
-      const normalizedTax = roundCurrency(taxAmount);
-      const total = roundCurrency(prepared.subtotal + normalizedShipping + normalizedTax);
-
-      createdOrder = await Order.create(
-        [
-          {
-            user: userId,
-            products: prepared.items.map((item) => ({
-              product: item.product,
-              quantity: item.quantity,
-              price: item.price
-            })),
-            subtotal: prepared.subtotal,
-            shippingCost: normalizedShipping,
-            taxAmount: normalizedTax,
-            total,
-            shippingAddress,
-            paymentMethod,
-            contactEmail,
-            contactPhone,
-            paymentStatus: paymentMethod === 'cod' ? 'pending' : 'pending'
-          }
-        ],
-        { session }
-      );
-
-      for (const item of prepared.items) {
-        item.stockDocument.stock -= item.quantity;
-        await item.stockDocument.save({ session });
-      }
-
-      await AuditLog.create(
-        [
-          {
-            user: userId,
-            action: 'create_order',
-            details: { orderId: createdOrder[0]._id, paymentMethod }
-          }
-        ],
-        { session }
-      );
+      createdOrder = await runOrderCreation({
+        userId,
+        products,
+        shippingAddress,
+        paymentMethod,
+        shippingCost,
+        taxAmount,
+        contactName,
+        contactEmail,
+        contactPhone,
+        session
+      });
     });
   } finally {
     session.endSession();
   }
 
-  return createdOrder?.[0];
+  return createdOrder;
 };
 
 export const createOrder = async (req, res, next) => {
@@ -125,18 +168,26 @@ export const createOrder = async (req, res, next) => {
       paymentMethod = 'cod',
       shippingCost = 0,
       taxAmount = 0,
+      contactName = '',
       contactEmail = '',
       contactPhone = ''
     } = req.body;
 
+    const normalizedContactName = String(contactName || '').trim();
+    const normalizedContactEmail = String(contactEmail || '').trim().toLowerCase();
+    if (!req.user && !normalizedContactEmail) {
+      return next(new AppError('Email is required for guest checkout', 400));
+    }
+
     const order = await createOrderTransaction({
-      userId: req.user._id,
+      userId: req.user?._id || null,
       products,
       shippingAddress,
       paymentMethod,
       shippingCost,
       taxAmount,
-      contactEmail,
+      contactName: normalizedContactName,
+      contactEmail: normalizedContactEmail,
       contactPhone
     });
 
@@ -196,6 +247,47 @@ export const getOrders = async (req, res, next) => {
     const [orders, total] = await Promise.all([
       Order.find(filter)
         .populate('user', 'name email')
+        .populate('products.product', 'name')
+        .sort({ createdAt: -1 })
+        .skip((numericPage - 1) * numericLimit)
+        .limit(numericLimit),
+      Order.countDocuments(filter)
+    ]);
+
+    res.json({
+      data: orders.map((order) => {
+        const serialized = order.toObject();
+        if (!serialized.user && (serialized.contactName || serialized.contactEmail)) {
+          serialized.customer = {
+            name: serialized.contactName || 'Guest checkout',
+            email: serialized.contactEmail || '',
+            phone: serialized.contactPhone || ''
+          };
+        }
+        return serialized;
+      }),
+      meta: {
+        page: numericPage,
+        limit: numericLimit,
+        total,
+        pages: Math.ceil(total / numericLimit)
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMyOrders = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const numericPage = Math.max(parseInt(page, 10) || 1, 1);
+    const numericLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+    const filter = { user: req.user._id };
+
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
         .populate('products.product', 'name')
         .sort({ createdAt: -1 })
         .skip((numericPage - 1) * numericLimit)

@@ -1,0 +1,83 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'Backend/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'Backend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          cache-dependency-path: 'Backend/package-lock.json'
+
+      - name: Install dependencies
+        run: cd Backend && npm ci
+
+      - name: Run linter
+        run: cd Backend && npm run lint
+        continue-on-error: true
+
+      - name: Run tests
+        env:
+          MONGO_URI: mongodb://localhost:27017/ecom-ci-test
+          JWT_SECRET: test_jwt_secret_key_12345
+          JWT_REFRESH_SECRET: test_jwt_refresh_secret_key_12345
+          NODE_ENV: test
+        run: cd Backend && npm test
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./Backend/coverage/coverage-final.json
+          flags: backend
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies
+        run: cd Backend && npm ci
+
+      - name: Build check
+        run: cd Backend && node --check server.js
+
+      - name: Check environment setup
+        run: |
+          cd Backend
+          if [ ! -f .env.example ]; then echo ".env.example missing"; exit 1; fi

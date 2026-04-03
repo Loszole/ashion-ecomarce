@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getProductPrimaryImage } from "../../utils/imageUrl";
 
-const kids = () => {
+const readCart = () => {
+    try {
+        const raw = localStorage.getItem("cart");
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+};
+
+function Kids() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -8,14 +19,38 @@ const kids = () => {
     const [totalPages, setTotalPages] = useState(1);
     const pageSize = 9;
 
+    const addToCart = (product) => {
+        const items = readCart();
+        const image = getProductPrimaryImage(product, "/img/product/product-1.jpg");
+        const existing = items.find((item) => item._id === product._id);
+
+        const next = existing
+            ? items.map((item) =>
+                  item._id === product._id ? { ...item, qty: Number(item.qty || 1) + 1 } : item
+              )
+            : [
+                  ...items,
+                  {
+                      _id: product._id,
+                      name: product.name,
+                      price: Number(product.price || 0),
+                      image,
+                      qty: 1
+                  }
+              ];
+
+        localStorage.setItem("cart", JSON.stringify(next));
+        window.dispatchEvent(new Event("cartUpdated"));
+    };
+
     useEffect(() => {
         setLoading(true);
         setError(null);
         fetch(`/api/products?category=kid&page=${page}&limit=${pageSize}`)
-            .then(res => res.json())
-            .then(data => {
-                setProducts(data.products);
-                setTotalPages(data.totalPages || 1);
+            .then((res) => res.json())
+            .then((data) => {
+                setProducts(data.data || []);
+                setTotalPages((data.meta && data.meta.pages) || 1);
                 setLoading(false);
             })
             .catch(() => {
@@ -31,7 +66,6 @@ const kids = () => {
                     <div className="col-lg-3 col-md-3">
                         <aside>
                             <div className="shop__sidebar">
-                                {/* Categories */}
                                 <div className="sidebar__categories">
                                     <div className="section-title">
                                         <h4>CATEGORIES</h4>
@@ -40,17 +74,17 @@ const kids = () => {
                                         <div className="accordion" id="accordionExample">
                                             <div className="card">
                                                 <div className="card-heading active">
-                                                    <a data-toggle="collapse" data-target="#collapsekid">kid</a>
+                                                    <a href="/#" data-toggle="collapse" data-target="#collapsekid" onClick={(e) => e.preventDefault()}>Kids</a>
                                                 </div>
                                                 <div id="collapsekid" className="collapse show" data-parent="#accordionExample">
                                                     <div className="card-body">
                                                         <ul>
-                                                            <li><a href="#">Coats</a></li>
-                                                            <li><a href="#">Jackets</a></li>
-                                                            <li><a href="#">Shirts</a></li>
-                                                            <li><a href="#">T-shirts</a></li>
-                                                            <li><a href="#">Jeans</a></li>
-                                                            <li><a href="#">Accessories</a></li>
+                                                            <li><Link to="/kids">Coats</Link></li>
+                                                            <li><Link to="/kids">Jackets</Link></li>
+                                                            <li><Link to="/kids">Shirts</Link></li>
+                                                            <li><Link to="/kids">T-shirts</Link></li>
+                                                            <li><Link to="/kids">Jeans</Link></li>
+                                                            <li><Link to="/kids">Accessories</Link></li>
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -58,54 +92,10 @@ const kids = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {/* Shop by price */}
-                                <div className="sidebar__filter">
-                                    <div className="section-title">
-                                        <h4>SHOP BY PRICE</h4>
-                                    </div>
-                                    <div className="filter-range-wrap">
-                                        <div className="price-range ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content" data-min="33" data-max="99"></div>
-                                        <div className="range-slider">
-                                            <div className="price-input">
-                                                <span>Price: د.إ33-د.إ99</span>
-                                                <button className="btn btn-outline-dark ml-2" style={{marginLeft: '10px', border: '1px solid #d32f2f', color: '#d32f2f', fontWeight: 'bold'}}>FILTER</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Shop by size */}
-                                <div className="sidebar__sizes">
-                                    <div className="section-title">
-                                        <h4>SHOP BY SIZE</h4>
-                                    </div>
-                                    <div className="size__list">
-                                        {['XXS','XS','XS-S','S','M','M-L','L','XL'].map(size => (
-                                            <label key={size} htmlFor={size.toLowerCase().replace(/[^a-z0-9]/g,'')}>
-                                                {size}
-                                                <input type="checkbox" id={size.toLowerCase().replace(/[^a-z0-9]/g,'')} />
-                                                <span className="checkmark"></span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                                {/* Shop by colour */}
-                                <div className="sidebar__color">
-                                    <div className="section-title">
-                                        <h4>SHOP BY COLOUR</h4>
-                                    </div>
-                                    <div className="size__list color__list">
-                                        {['Blacks','Whites','Reds','Greys','Blues','Beige Tones','Greens','Yellows'].map(color => (
-                                            <label key={color} htmlFor={color.toLowerCase().replace(/[^a-z0-9]/g,'')}>
-                                                {color}
-                                                <input type="checkbox" id={color.toLowerCase().replace(/[^a-z0-9]/g,'')} />
-                                                <span className="checkmark"></span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
                             </div>
                         </aside>
                     </div>
+
                     <div className="col-lg-9 col-md-9">
                         {loading ? (
                             <div>Loading...</div>
@@ -113,45 +103,50 @@ const kids = () => {
                             <div className="alert alert-danger">{error}</div>
                         ) : (
                             <div className="row">
-                                {products.map(product => (
-                                    <div className="col-lg-4 col-md-6 col-sm-6" key={product._id}>
-                                        <div className="product__item">
-                                            <div className="product__item__pic set-bg" style={{ backgroundImage: `url(${product.image})` }}>
-                                                <ul className="product__hover">
-                                                    <li><a href={product.image} className="image-popup"><span className="arrow_expand"></span></a></li>
-                                                    <li><a href="#"><span className="icon_heart_alt"></span></a></li>
-                                                    <li><a href="#"><span className="icon_bag_alt"></span></a></li>
-                                                </ul>
-                                            </div>
-                                            <div className="product__item__text">
-                                                <h6><a href="#">{product.name}</a></h6>
-                                                <div className="rating">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <i key={i} className={`fa fa-star${i < (product.rating || 0) ? "" : "-o"}`}></i>
-                                                    ))}
+                                {products.map((product) => {
+                                    const image = getProductPrimaryImage(product, "/img/product/product-1.jpg");
+
+                                    return (
+                                        <div className="col-lg-4 col-md-6 col-sm-6" key={product._id}>
+                                            <div className="product__item">
+                                                <div
+                                                    className="product__item__pic set-bg"
+                                                    style={{ backgroundImage: `url(${image})` }}
+                                                >
+                                                    <ul className="product__hover">
+                                                        <li>
+                                                            <a href={image} className="image-popup"><span className="arrow_expand"></span></a>
+                                                        </li>
+                                                        <li><Link to="/wishlist"><span className="icon_heart_alt"></span></Link></li>
+                                                        <li>
+                                                            <button type="button" className="btn p-0" onClick={() => addToCart(product)}>
+                                                                <span className="icon_bag_alt"></span>
+                                                            </button>
+                                                        </li>
+                                                    </ul>
                                                 </div>
-                                                <div className="product__price">د.إ {product.price}</div>
+                                                <div className="product__item__text">
+                                                    <h6><Link to={`/product/${product._id}`}>{product.name}</Link></h6>
+                                                    <div className="product__price">$ {Number(product.price || 0).toFixed(2)}</div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
+
                                 <div className="col-lg-12 text-center">
                                     <div className="pagination__option">
                                         {Array.from({ length: totalPages }, (_, i) => (
-                                            <a
-                                                href="#"
+                                            <button
+                                                type="button"
                                                 key={i}
                                                 className={page === i + 1 ? "active" : ""}
-                                                onClick={e => { e.preventDefault(); setPage(i + 1); }}
+                                                onClick={() => setPage(i + 1)}
+                                                aria-label={`Go to page ${i + 1}`}
                                             >
                                                 {i + 1}
-                                            </a>
+                                            </button>
                                         ))}
-                                        {page < totalPages && (
-                                            <a href="#" onClick={e => { e.preventDefault(); setPage(page + 1); }}>
-                                                <i className="fa fa-angle-right"></i>
-                                            </a>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -161,6 +156,6 @@ const kids = () => {
             </div>
         </section>
     );
-};
+}
 
-export default kids;
+export default Kids;

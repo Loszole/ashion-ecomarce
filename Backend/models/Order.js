@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
   products: [
     {
       product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
@@ -16,6 +16,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: { type: String, enum: ['cod', 'stripe', 'paypal'], default: 'cod' },
   paymentStatus: { type: String, enum: ['pending', 'paid', 'failed', 'refunded'], default: 'pending' },
   status: { type: String, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
+  contactName: { type: String, default: '' },
   contactEmail: { type: String, default: '' },
   contactPhone: { type: String, default: '' },
   shippingAddress: { type: String, required: true },

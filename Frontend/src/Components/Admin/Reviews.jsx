@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { fetchAdminJson, toArray } from "./adminApi";
 
 const PAGE_SIZE = 10;
 
@@ -13,39 +14,40 @@ const Reviews = () => {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    fetch("/api/reviews")
-      .then(res => res.json())
+    const controller = new AbortController();
+
+    fetchAdminJson("/api/reviews", { signal: controller.signal })
       .then(data => {
-        setReviews(data);
+        setReviews(toArray(data));
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to load reviews");
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setError(err.message || "Failed to load reviews");
         setLoading(false);
       });
+
+    return () => controller.abort();
   }, [success]);
 
   const handleModerate = (id, status) => {
     setSuccess("");
     setError(null);
-    fetch(`/api/reviews/${id}`, {
+    fetchAdminJson(`/api/reviews/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status })
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) setSuccess("Review updated.");
         else setError("Failed to update review.");
       })
-      .catch(() => setError("Failed to update review."));
+      .catch((err) => setError(err.message || "Failed to update review."));
   };
 
   const handleBulkModerate = (status) => {
     Promise.all(selected.map(id =>
-      fetch(`/api/reviews/${id}`, {
+      fetchAdminJson(`/api/reviews/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status })
       })
     ))
@@ -117,14 +119,14 @@ const Reviews = () => {
                   <td><input type="checkbox" checked={selected.includes(r._id)} onChange={() => handleSelect(r._id)} /></td>
                   <td>{r.user?.name || "-"}</td>
                   <td>{r.product?.name || "-"}</td>
-                  <td>{r.rating} / 5</td>
+                  <td>{Number(r.rating || 0)} / 5</td>
                   <td style={{maxWidth: 250, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{r.comment}</td>
                   <td>
                     <span className={`badge bg-${r.status === "approved" ? "success" : r.status === "rejected" ? "danger" : "warning text-dark"}`}>
-                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                      {r.status ? r.status.charAt(0).toUpperCase() + r.status.slice(1) : "Pending"}
                     </span>
                   </td>
-                  <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+                  <td>{r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "-"}</td>
                   <td>
                     {r.status === "pending" && (
                       <>

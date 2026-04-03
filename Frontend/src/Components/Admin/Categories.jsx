@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { fetchAdminJson, toArray } from "./adminApi";
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -11,16 +12,20 @@ const Categories = () => {
   const [editForm, setEditForm] = useState({ name: "", parent: "" });
 
   useEffect(() => {
-    fetch("/api/categories")
-      .then(res => res.json())
+    const controller = new AbortController();
+
+    fetchAdminJson("/api/categories", { signal: controller.signal })
       .then(data => {
-        setCategories(data);
+        setCategories(toArray(data));
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to load categories");
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setError(err.message || "Failed to load categories");
         setLoading(false);
       });
+
+    return () => controller.abort();
   }, [success]);
 
   const handleChange = e => {
@@ -31,12 +36,10 @@ const Categories = () => {
     e.preventDefault();
     setSuccess("");
     setError(null);
-    fetch("/api/categories", {
+    fetchAdminJson("/api/categories", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form)
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) {
           setSuccess("Category saved successfully.");
@@ -45,7 +48,7 @@ const Categories = () => {
           setError("Failed to save category.");
         }
       })
-      .catch(() => setError("Failed to save category."));
+      .catch((err) => setError(err.message || "Failed to save category."));
   };
 
   const handleEdit = (cat) => {
@@ -55,12 +58,11 @@ const Categories = () => {
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
-    fetch(`/api/categories/${editId}`, {
+    setError(null);
+    fetchAdminJson(`/api/categories/${editId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editForm)
     })
-      .then(res => res.json())
       .then(data => {
         if (data && data._id) {
           setSuccess("Category updated.");
@@ -69,15 +71,15 @@ const Categories = () => {
           setError("Failed to update category.");
         }
       })
-      .catch(() => setError("Failed to update category."));
+      .catch((err) => setError(err.message || "Failed to update category."));
   };
 
   const handleDelete = (id) => {
     if (!window.confirm("Delete this category?")) return;
-    fetch(`/api/categories/${id}`, { method: "DELETE" })
-      .then(res => res.json())
+    setError(null);
+    fetchAdminJson(`/api/categories/${id}`, { method: "DELETE" })
       .then(() => setSuccess("Category deleted."))
-      .catch(() => setError("Failed to delete category."));
+      .catch((err) => setError(err.message || "Failed to delete category."));
   };
 
   // Group subcategories under their parent
